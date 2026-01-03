@@ -3,7 +3,11 @@ from typing import Optional
 from datetime import date
 from pydantic import BaseModel
 
+from app.booking.router import router as router_bookings
+
 app = FastAPI()
+
+app.include_router(router_bookings)
 
 class SHotels(BaseModel):
     addres: str
