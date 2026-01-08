@@ -3,7 +3,7 @@ from passlib.context import CryptContext
 from jose import jwt
 from pydantic import EmailStr
 
-from app.config import Setting
+from app.config import setting
 from app.users.service import UsersService
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -16,11 +16,10 @@ def verify_password(plain_password, hashed_password) -> bool:
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    setting = Setting()
     expire = datetime.now() + timedelta(minutes=30)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
-        to_encode, setting.SALT
+        to_encode, setting.SALT, setting.ALGORITHN
     )
     return encoded_jwt
 

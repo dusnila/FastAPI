@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.booking.schemas import SBooking
 from app.booking.service import BookingService
+from app.users.dependencies import get_curret_user
+from app.users.models import Users
 
 
 router = APIRouter(
@@ -11,5 +13,5 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_booking() -> list[SBooking]:
-    return await BookingService.find_all() 
+async def get_booking(user: Users = Depends(get_curret_user)):
+    return await BookingService.find_all(user_id=user.id) 
