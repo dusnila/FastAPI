@@ -34,3 +34,14 @@ class RoomCannotBeBooked(BookingException):
     status_code=status.HTTP_409_CONFLICT
     detail="не осталось свободных мест"
 
+class NotRoomsInLocation(BookingException):
+    status_code=status.HTTP_409_CONFLICT
+    detail="нету отелей в этой локации со свободными комнатами"
+
+class NotBookingsExecute(BookingException):
+    status_code= status.HTTP_409_CONFLICT
+    detail="нету записей для этого пользователя"
+
+class BookingNotDeleteExecute(BookingException):
+    status_code = status.HTTP_404_NOT_FOUND
+    detail="нету такой записи или она не ваша"

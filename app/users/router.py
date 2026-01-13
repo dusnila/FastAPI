@@ -40,5 +40,5 @@ async def read_users_me(current_user: Users = Depends(get_curret_user)):
     return current_user
 
 @router.get("/all")
-async def read_users_me(current_user: Users = Depends(get_curret_admin_user)):
+async def read_users_all(current_user: Users = Depends(get_curret_admin_user)):
     return await UsersService.find_all()

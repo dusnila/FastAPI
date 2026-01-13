@@ -1,9 +1,9 @@
 from datetime import date
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 
 from app.booking.schemas import SBooking
 from app.booking.service import BookingService
-from app.exceptions import RoomCannotBeBooked
+from app.exceptions import BookingNotDeleteExecute, NotBookingsExecute, RoomCannotBeBooked
 from app.users.dependencies import get_curret_user
 from app.users.models import Users
 
@@ -15,8 +15,12 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_booking(user: Users = Depends(get_curret_user)) -> list[SBooking]:
-    return await BookingService.find_all(user_id=user.id) 
+async def get_booking(user: Users = Depends(get_curret_user)):
+    bookings = await BookingService.find_all_booking(user.id)
+    if not bookings:
+        return NotBookingsExecute
+    return bookings
+
 
 
 @router.post("")
@@ -28,3 +32,16 @@ async def add_booking(
     if not booking:
         raise RoomCannotBeBooked
     
+
+@router.delete(
+        "/{id_booking}",
+        status_code=204,
+)
+async def delete(
+    id_booking: int,
+    user: Users = Depends(get_curret_user),
+):
+    result = await BookingService.delete(user.id, id_booking)
+    if not result:
+        raise BookingNotDeleteExecute
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

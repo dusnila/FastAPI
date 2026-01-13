@@ -1,10 +1,11 @@
 from datetime import date
 from app.database import async_session_maker
-from sqlalchemy import and_, func, insert, or_, select
+from sqlalchemy import and_, delete, func, insert, or_, select
 
 from app.booking.models import Bookings
-from app.rooms.models import Rooms
+from app.hotels.rooms.models import Rooms
 from app.service.base import BaseService
+from app.users.models import Users
 
 class BookingService(BaseService):
     model = Bookings
@@ -45,7 +46,8 @@ class BookingService(BaseService):
             rooms_left = await session.execute(get_rooms_left)
             rooms_left: int = rooms_left.scalar()
 
-            if rooms_left > 0:
+
+            if rooms_left is None or rooms_left > 0:
                 get_price = select(Rooms.price).filter_by(id=room_id)
                 price = await session.execute(get_price)
                 price: int = price.scalar()
@@ -62,3 +64,40 @@ class BookingService(BaseService):
                 return new_booking.scalar()
             else:
                 return None
+            
+
+    @classmethod
+    async def find_all_booking(cls, user_id: int):
+# select *, r.image_id, r.name, r.description, r.services AS image_id, name, description, services
+# from Bookings 
+# join rooms r on room_id = r.id
+        async with async_session_maker() as session:
+            querty = (
+                select(
+                    Bookings,
+                    Rooms.image_id,
+                    Rooms.name,
+                    Rooms.description,
+                    Rooms.services,
+                ).join(Rooms, Bookings.room_id == Rooms.id)
+                .where(Bookings.user_id == user_id)
+            )
+
+            result = await session.execute(querty)
+            return result.mappings().all()
+        
+    
+    @classmethod
+    async def delete(cls, user_id: int, booking_id: int):
+        async with async_session_maker() as session:
+            querty = (
+                delete(Bookings).where(
+                    and_(
+                        Bookings.id == booking_id,
+                        Bookings.user_id == user_id
+                    )
+                ).returning(Bookings)
+            )
+            result = await session.execute(querty)
+            await session.commit()
+            return result.mappings().first()
