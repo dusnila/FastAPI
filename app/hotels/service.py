@@ -47,5 +47,4 @@ class HotelsService(BaseService):
             )
 
             result = await session.execute(Hotels_left)
-            all_results = result.mappings().all()
-            return all_results
+            return result.mappings().all()
