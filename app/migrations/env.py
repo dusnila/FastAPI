@@ -13,7 +13,7 @@ from app.config import setting
 from app.database import Base
 from app.hotels.models import Hotels
 from app.users.models import Users
-from app.rooms.models import Rooms
+from app.hotels.rooms.models import Rooms
 from app.booking.models import Bookings
 
 
