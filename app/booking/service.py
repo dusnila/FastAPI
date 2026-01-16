@@ -74,7 +74,7 @@ class BookingService(BaseService):
         async with async_session_maker() as session:
             querty = (
                 select(
-                    Bookings,
+                     *Bookings.__table__.columns, 
                     Rooms.image_id,
                     Rooms.name,
                     Rooms.description,

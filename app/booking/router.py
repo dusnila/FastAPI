@@ -1,7 +1,7 @@
 from datetime import date
 from fastapi import APIRouter, Depends, Response, status
 
-from app.booking.schemas import SBooking
+from app.booking.schemas import SBooking, SBookingInfo
 from app.booking.service import BookingService
 from app.exceptions import BookingNotDeleteExecute, NotBookingsExecute, RoomCannotBeBooked
 from app.tasks.tasks import send_booking_confirmation_email
@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_booking(user: Users = Depends(get_curret_user)) :
+async def get_booking(user: Users = Depends(get_curret_user)):
     bookings = await BookingService.find_all_booking(user.id)
     if not bookings:
         return NotBookingsExecute

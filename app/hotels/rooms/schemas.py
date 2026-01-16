@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class SRooms(BaseModel):
@@ -11,5 +11,4 @@ class SRooms(BaseModel):
     quantity: int
     image_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
