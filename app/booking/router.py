@@ -29,7 +29,7 @@ async def add_booking(
     room_id: int, date_from: date, date_to: date,
     user: Users = Depends(get_curret_user),
 ) -> SBooking:
-    booking = await BookingService.add(user.id, room_id, date_from, date_to)
+    booking = await BookingService.add_booking(user.id, room_id, date_from, date_to)
     if not booking:
         raise RoomCannotBeBooked
     booking_model = SBooking.model_validate(booking)

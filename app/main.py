@@ -3,25 +3,23 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from sqladmin import Admin
-from app.admin.auth import authentication_backend
-
-from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UsersAdmin
-from app.booking.router import router as router_bookings
-from app.users.models import Users
-from app.users.router import router as router_users
-from app.hotels.rooms.router import router as router_hotels
-
-from app.pages.router import router as router_pages
-from app.images.router import router as router_images
-
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
+from redis import asyncio as aioredis
+from sqladmin import Admin
+
+from app.admin.auth import authentication_backend
+from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UsersAdmin
+from app.booking.router import router as router_bookings
 from app.config import setting
 from app.database import engin
+from app.hotels.rooms.router import router as router_hotels
+from app.images.router import router as router_images
+from app.pages.router import router as router_pages
+from app.users.models import Users
+from app.users.router import router as router_users
 
-from redis import asyncio as aioredis
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
