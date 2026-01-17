@@ -21,10 +21,10 @@ async def get_curret_user(token: str = Depends(get_token)):
         )   
     except JWTError:
         raise IncorrectTokenFormatException
-    expire: str = payload.get("exp")
+    expire = payload.get("exp")
     if (not expire) or (int(expire) < datetime.now().timestamp()):
         raise TokenExpiredException
-    user_id: str = payload.get("sub")
+    user_id = payload.get("sub")
     if not user_id:
         raise UserIsNotException
     user = await UsersService.find_by_id(int(user_id))

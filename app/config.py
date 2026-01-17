@@ -2,7 +2,8 @@ from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Setting(BaseSettings):
-    MODE: Literal["DEV", "TEST", "PROD"]
+    MODE: Literal["DEV", "TEST", "PROD"] 
+    LOG_LEVEL: Literal["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
 
     DB_HOST: str
     DB_PORT: int
@@ -38,4 +39,4 @@ class Setting(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env")
 
-setting = Setting()
+setting = Setting() # type: ignore
