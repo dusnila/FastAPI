@@ -9,6 +9,7 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
 from sqladmin import Admin
+from fastapi_versioning import VersionedFastAPI
 
 from app.admin.auth import authentication_backend
 from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UsersAdmin
@@ -32,8 +33,6 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(lifespan=lifespan)
 
 
-app.mount("/static", StaticFiles(directory="app/static"), "static")
-
 app.include_router(router_users)
 app.include_router(router_bookings)
 app.include_router(router_hotels)
@@ -45,6 +44,12 @@ app.include_router(router_images)
 @cache()
 async def get_cache():
     return 1
+
+
+app = VersionedFastAPI(app,
+    version_format="{major}",
+    prefix_format="/v{major}",                   
+)
 
 
 admin = Admin(app, engin, authentication_backend=authentication_backend)
@@ -64,3 +69,5 @@ async def add_process_time_header(request: Request, call_next):
         "process_time" : round(process_time, 4)
     })
     return response
+
+app.mount("/static", StaticFiles(directory="app/static"), "static")

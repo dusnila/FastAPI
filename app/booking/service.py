@@ -53,7 +53,7 @@ class BookingService(BaseService):
             )
 
             result = await session.execute(get_rooms_left)
-            rooms_left: int = result.scalar() or 0
+            rooms_left: int = result.scalar() or 1
 
             if rooms_left > 0:
                 get_price = select(Rooms.price).filter_by(id=room_id)

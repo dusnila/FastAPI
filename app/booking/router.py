@@ -1,5 +1,6 @@
 from datetime import date
 from fastapi import APIRouter, Depends, Response, status
+from fastapi_versioning import version
 
 from app.booking.schemas import SBooking, SBookingInfo
 from app.booking.service import BookingService
@@ -16,6 +17,7 @@ router = APIRouter(
 
 
 @router.get("")
+@version(1)
 async def get_booking(user: Users = Depends(get_curret_user)):
     bookings = await BookingService.find_all_booking(user.id)
     if not bookings:
@@ -25,6 +27,7 @@ async def get_booking(user: Users = Depends(get_curret_user)):
 
 
 @router.post("")
+@version(1)
 async def add_booking(
     room_id: int, date_from: date, date_to: date,
     user: Users = Depends(get_curret_user),
@@ -42,6 +45,7 @@ async def add_booking(
         "/{id_booking}",
         status_code=204,
 )
+@version(1)
 async def delete(
     id_booking: int,
     user: Users = Depends(get_curret_user),
