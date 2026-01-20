@@ -21,7 +21,7 @@ from app.booking.models import Bookings #noqa
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url", f"{setting.DB_URL}?async_fallback=True")
+config.set_main_option("sqlalchemy.url", f"{setting.DATABASE_URL}?async_fallback=True")
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

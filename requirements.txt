@@ -52,6 +52,7 @@ pendulum==3.1.0
 pillow==12.1.0
 platformdirs==4.5.1
 pluggy==1.6.0
+prometheus-fastapi-instrumentator==7.1.0
 prometheus_client==0.24.1
 prompt_toolkit==3.0.52
 pyasn1==0.6.1

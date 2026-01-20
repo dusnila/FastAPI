@@ -22,11 +22,22 @@ from app.pages.router import router as router_pages
 from app.users.models import Users
 from app.users.router import router as router_users
 from app.logger import logger
+from prometheus_fastapi_instrumentator import Instrumentator
+
+
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    excluded_handlers=[".*admin.*", "/metrics"]
+)
+
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app_instance: FastAPI) -> AsyncIterator[None]:
     redis = aioredis.from_url(f"redis://{setting.REDIS_HOST}:{setting.REDIS_PORT}")
     FastAPICache.init(RedisBackend(redis), prefix="cache")
+
+    instrumentator.expose(app_instance)
+
     yield
 
 
@@ -50,6 +61,9 @@ app = VersionedFastAPI(app,
     version_format="{major}",
     prefix_format="/v{major}",                   
 )
+
+
+instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)
 
 
 admin = Admin(app, engin, authentication_backend=authentication_backend)
