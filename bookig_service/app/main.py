@@ -41,7 +41,10 @@ async def lifespan(app_instance: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    title="Booking Service",
+)
 
 
 app.include_router(router_users)
@@ -59,7 +62,8 @@ async def get_cache():
 
 app = VersionedFastAPI(app,
     version_format="{major}",
-    prefix_format="/v{major}",                   
+    prefix_format="/v{major}",
+    root_path="/booking"                    
 )
 
 
