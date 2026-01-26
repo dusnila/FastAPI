@@ -27,6 +27,10 @@ class NotSuchUserExeption(BookingException):
     status_code=status.HTTP_404_NOT_FOUND
     detail="Пользователь с такой почтой отсутвует"
 
+class UserNotToVerifyExeption(BookingException):
+    status_code=status.HTTP_403_FORBIDDEN
+    detail="Пользователь не был подвержден по почте"
+
 class TokenExpiredException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="токен истек"

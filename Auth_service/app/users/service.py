@@ -1,9 +1,12 @@
 import uuid
 
+from fastapi import Response
+
+from app.users.auth import create_access_token
 from app.tasks.tasks import send_verification_email
-from app.exceptions import EmailAlreadyExistsException, InvalidLinkException, NotSuchUserExeption, UsernameAlreadyExistsException
-from app.users.utils import get_password_hash
-from app.users.schemas import SUserRegister
+from app.exceptions import EmailAlreadyExistsException, IncorrectEmailorPasswordException, InvalidLinkException, NotSuchUserExeption, UserNotToVerifyExeption, UsernameAlreadyExistsException
+from app.users.utils import get_password_hash, verify_password
+from app.users.schemas import SUserAuth, SUserRegister
 from app.service.base import BaseService
 from app.users.models import Users
 from app.core.redis import redis_manager
@@ -64,4 +67,15 @@ class UsersService(BaseService):
 
         send_verification_email.delay(email, verification_token)
 
-        return {"detail": "подверждение отправлено"}    
+        return {"detail": "подверждение отправлено"}
+
+    @classmethod
+    async def login_and_get_token(cls, response: Response, user_data: SUserAuth):
+        user = await cls.find_one_or_none(email=user_data.email)
+        if not user or not verify_password(user_data.password, user.hashed_password):
+            raise IncorrectEmailorPasswordException
+        if not user.is_active:
+            raise UserNotToVerifyExeption
+        access_token = create_access_token({"sub": str(user.id)})
+        response.set_cookie("booking_access_token", access_token, httponly=True)
+        return {"detail": "упешная авторизация"} 

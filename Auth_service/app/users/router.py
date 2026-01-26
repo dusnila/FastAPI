@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status
 from pydantic import EmailStr
 
-from app.exceptions import IncorrectEmailorPasswordException
-from app.users.auth import authenticate_user, create_access_token
 from app.users.dependencies import get_curret_admin_user, get_curret_user
 from app.users.models import Users
 from app.users.service import UsersService
@@ -47,13 +45,11 @@ async def send_verify(email: SSendMessageEmail):
     return responce
 
 
-@router.post("/login")
+@router.post(
+        "/login"
+)
 async def login_user(response: Response, user_data: SUserAuth):
-    user = await authenticate_user(user_data.email, user_data.password)
-    if not user:
-        raise IncorrectEmailorPasswordException
-    access_token = create_access_token({"sub": str(user.id)})
-    response.set_cookie("booking_access_token", access_token, httponly=True)
+    access_token = await UsersService.login_and_get_token(response, user_data)
     return access_token
 
 
