@@ -1,28 +1,11 @@
 services:
-  booking_db:
-    image: postgres:latest
-    container_name: booking_db
-    volumes:
-      - postgresdata_booking:/var/lib/postgressql/data
-    env_file:
-      - ./bookig_service/.env-non-dev
-
-  redis:
-    image: redis:latest
-    container_name: booking_redis
-  
-  booking:
-    build:
-      context: ./bookig_service
-    container_name: booking_app
-    env_file:
-      - ./bookig_service/.env-non-dev
-    command: ["/booking/docker/app.sh"]
-    ports:
-      - 8001:8000
-    depends_on:
-      - booking_db
-      - redis
+  # booking_db:
+  #   image: postgres:latest
+  #   container_name: booking_db
+  #   volumes:
+  #     - postgresdata_booking:/var/lib/postgressql/data
+  #   env_file:
+  #     - ./bookig_service/.env-non-dev
 
   auth_db:
     image: postgres:latest
@@ -32,6 +15,27 @@ services:
     env_file:
       - ./Auth_service/.env-non-dev
 
+  redis:
+    image: redis:latest
+    container_name: booking_redis
+
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: compose_rabbitmq
+  
+  # booking:
+  #   build:
+  #     context: ./bookig_service
+  #   container_name: booking_app
+  #   env_file:
+  #     - ./bookig_service/.env-non-dev
+  #   command: ["/booking/docker/app.sh"]
+  #   ports:
+  #     - 8001:8000
+  #   depends_on:
+  #     - booking_db
+  #     - redis
+
   auth:
     build:
       context: ./Auth_service
@@ -40,60 +44,61 @@ services:
       - ./Auth_service/.env-non-dev
     command: ["/Auth/docker/app.sh"]
     ports:
-      - 8002:8000
+      - 8000:8000
     depends_on:
       - auth_db
 
-  nginx:
-    image: nginx:latest
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - auth
-      - booking
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./nginx_config.conf:/etc/nginx/conf.d/default.conf
+  #   depends_on:
+  #     - auth
+  #     - booking
  
   celery:
     build:
-      context: .
-    container_name: booking_celery
-    command: ["/booking/docker/celery.sh", "celery"]
+      context: ./Auth_service
+    container_name: task_celery
+    command: ["/Auth/docker/celery.sh", "celery"]
     env_file:
-      - .env-non-dev
+      - ./Auth_service/.env-non-dev
     depends_on:
       - redis
+      - rabbitmq
 
   flower:
     build:
-      context: .
-    container_name: booking_flower
-    command: ["/booking/docker/celery.sh", "flower"]
+      context: ./Auth_service
+    container_name: task_flower
+    command: ["/Auth/docker/celery.sh", "flower"]
     env_file:
-      - .env-non-dev
+      - ./Auth_service/.env-non-dev
     ports:
       - 5555:5555
     depends_on:
       - redis
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    user: "root"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheusdata:/prometheus
-    ports:
-      - 9090:9090
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   user: "root"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheusdata:/prometheus
+  #   ports:
+  #     - 9090:9090
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    volumes:
-      - grafanadata:/var/lib/grafana
-    restart: unless-stopped
-    ports:
-      - 3000:3000
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   volumes:
+  #     - grafanadata:/var/lib/grafana
+  #   restart: unless-stopped
+  #   ports:
+  #     - 3000:3000
     
 
 volumes:
