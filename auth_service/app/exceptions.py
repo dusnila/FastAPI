@@ -45,6 +45,7 @@ class IncorrectTokenFormatException(BookingException):
 
 class UserIsNotException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
+    detail="такой пользовател отсуствует"
 
 class RoomCannotBeBooked(BookingException):
     status_code=status.HTTP_409_CONFLICT

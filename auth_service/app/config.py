@@ -1,4 +1,5 @@
 from typing import Literal
+from pydantic import FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Setting(BaseSettings):
@@ -26,8 +27,19 @@ class Setting(BaseSettings):
         return f"postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASS}@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
     
 
-    SALT: str
-    ALGORITHN: str
+    PRIVATE_KEY_PATH: FilePath
+
+    @property
+    def PRIVATE_KEY(self) -> str:
+        return self.PRIVATE_KEY_PATH.read_text(encoding="UTF-8")    
+    
+    PUBLIC_KEY_PATH: FilePath
+
+    @property
+    def PUBLIC_KEY(self) -> str:
+        return self.PUBLIC_KEY_PATH.read_text(encoding="UTF-8")
+
+    ALGORITHM: str
 
     SMTP_HOST: str
     SMTP_PORT: int

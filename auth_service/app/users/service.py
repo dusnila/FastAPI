@@ -2,10 +2,10 @@ import uuid
 
 from fastapi import Response
 
-from app.users.auth import create_access_token
+
 from app.tasks.tasks import send_verification_email
 from app.exceptions import EmailAlreadyExistsException, IncorrectEmailorPasswordException, InvalidLinkException, NotSuchUserExeption, UserNotToVerifyExeption, UsernameAlreadyExistsException
-from app.users.utils import get_password_hash, verify_password
+from app.users.utils import get_password_hash, verify_password, encode_access_token
 from app.users.schemas import SUserAuth, SUserRegister
 from app.service.base import BaseService
 from app.users.models import Users
@@ -76,6 +76,6 @@ class UsersService(BaseService):
             raise IncorrectEmailorPasswordException
         if not user.is_active:
             raise UserNotToVerifyExeption
-        access_token = create_access_token({"sub": str(user.id)})
+        access_token = encode_access_token({"sub": str(user.id)})
         response.set_cookie("booking_access_token", access_token, httponly=True)
         return {"detail": "упешная авторизация"} 

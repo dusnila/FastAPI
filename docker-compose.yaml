@@ -20,7 +20,7 @@ services:
     container_name: booking_redis
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:management
     container_name: compose_rabbitmq
   
   # booking:
