@@ -7,7 +7,6 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 
-
 from app.users.router import router as router_users
 from app.core.redis import redis_manager
 
@@ -35,5 +34,4 @@ app.include_router(router_users)
 @cache()
 async def get_cache():
     return 1
-
 

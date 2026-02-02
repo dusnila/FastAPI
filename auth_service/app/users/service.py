@@ -5,11 +5,12 @@ from fastapi import Response
 
 from app.tasks.tasks import send_verification_email
 from app.exceptions import EmailAlreadyExistsException, IncorrectEmailorPasswordException, InvalidLinkException, NotSuchUserExeption, UserNotToVerifyExeption, UsernameAlreadyExistsException
-from app.users.utils import get_password_hash, verify_password, encode_access_token
-from app.users.schemas import SUserAuth, SUserRegister
+from app.users.utils import get_password_hash, verify_password, encode_token
+from app.users.schemas import SUserAuth, SUserJWT, SUserRegister
 from app.service.base import BaseService
 from app.users.models import Users
 from app.core.redis import redis_manager
+from app.users.helper import create_access_token, create_refresh_token
 
 
 class UsersService(BaseService):
@@ -69,13 +70,26 @@ class UsersService(BaseService):
 
         return {"detail": "подверждение отправлено"}
 
+
     @classmethod
-    async def login_and_get_token(cls, response: Response, user_data: SUserAuth):
+    async def login_and_get_token(cls, response: Response, user_data: SUserJWT):
         user = await cls.find_one_or_none(email=user_data.email)
         if not user or not verify_password(user_data.password, user.hashed_password):
             raise IncorrectEmailorPasswordException
         if not user.is_active:
             raise UserNotToVerifyExeption
-        access_token = encode_access_token({"sub": str(user.id)})
+        
+        access_token = create_access_token(user=user_data)
         response.set_cookie("booking_access_token", access_token, httponly=True)
+
+        refresh_token = create_refresh_token(user=user_data)
+        await cls.update({"email": user_data.email}, refresh_JWT=refresh_token)
+
+        response.set_cookie("booking_refresh_token", refresh_token, httponly=True)
+
         return {"detail": "упешная авторизация"} 
+    
+
+    @classmethod
+    async def set_refresh_token_DB(token: str):
+        pass

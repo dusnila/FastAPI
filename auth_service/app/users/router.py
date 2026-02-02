@@ -65,3 +65,7 @@ async def read_users_me(current_user: Users = Depends(get_curret_user)):
 @router.get("/all")
 async def read_users_all(current_user: Users = Depends(get_curret_admin_user)):
     return await UsersService.find_all()
+
+@router.post("/refresh")
+async def refresh_token():
+    pass

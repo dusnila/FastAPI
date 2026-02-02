@@ -35,9 +35,13 @@ class TokenExpiredException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="токен истек"
 
-class TokenAbsenException(BookingException):
+class TokenAccessAbsenException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
-    detail="токен отсутствует"
+    detail="access токен отсутствует"
+
+class TokenRefreshAbsenException(BookingException):
+    status_code=status.HTTP_401_UNAUTHORIZED
+    detail="refresh токен отсутствует"
 
 class IncorrectTokenFormatException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED

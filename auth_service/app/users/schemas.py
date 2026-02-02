@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 class SUserAuth(BaseModel):
+    username : str
     email : EmailStr
     password : str
 
@@ -18,5 +19,13 @@ class SUserRegister(BaseModel):
 
 class SSendMessageEmail(BaseModel):
     email : EmailStr
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SUserJWT(BaseModel):
+    username: str
+    email: EmailStr
+    refresh_JWT: str
 
     model_config = ConfigDict(from_attributes=True)
