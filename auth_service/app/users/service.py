@@ -5,19 +5,21 @@ from fastapi import Response
 
 from app.tasks.tasks import send_verification_email
 from app.exceptions import EmailAlreadyExistsException, IncorrectEmailorPasswordException, InvalidLinkException, NotSuchUserExeption, UserNotToVerifyExeption, UsernameAlreadyExistsException
-from app.users.utils import get_password_hash, verify_password, encode_token
-from app.users.schemas import SUserAuth, SUserJWT, SUserRegister
+from app.users.utils import get_password_hash, verify_password
+from app.users.schemas import SUser, SUserAuth
+from app.users.JWT_session.schemas import SUserJWT, SSession
 from app.service.base import BaseService
-from app.users.models import Users
+from app.users.models import User
 from app.core.redis import redis_manager
-from app.users.helper import create_access_token, create_refresh_token
+from app.users.JWT_session.service import SessionService
+from app.users.JWT_session.utils_jwt import create_refresh_token, create_access_token
 
 
 class UsersService(BaseService):
-    model = Users
+    model = User
 
     @classmethod
-    async def register_user_service(cls, user_data: SUserRegister):
+    async def register_user_service(cls, user_data: SUserAuth):
 
         existing_user = await cls.find_one_or_none(email=user_data.email)
         if existing_user:
@@ -59,6 +61,7 @@ class UsersService(BaseService):
 
     @classmethod
     async def send_message_verify_service(cls, email: str):
+        print(await  cls.find_one_or_none(email=email))
         if not await cls.find_one_or_none(email=email):
             raise NotSuchUserExeption
 
@@ -72,18 +75,25 @@ class UsersService(BaseService):
 
 
     @classmethod
-    async def login_and_get_token(cls, response: Response, user_data: SUserJWT):
+    async def login_and_get_token(cls, response: Response, user_data: SUserAuth):
         user = await cls.find_one_or_none(email=user_data.email)
         if not user or not verify_password(user_data.password, user.hashed_password):
             raise IncorrectEmailorPasswordException
-        if not user.is_active:
+        
+        user_schema = SUser.model_validate(user)
+        if not user_schema.is_active:
             raise UserNotToVerifyExeption
         
         access_token = create_access_token(user=user_data)
         response.set_cookie("booking_access_token", access_token, httponly=True)
 
         refresh_token = create_refresh_token(user=user_data)
-        await cls.update({"email": user_data.email}, refresh_JWT=refresh_token)
+        await SessionService.add_session(
+        session_data=SSession(
+            user_id=user_schema.id,
+            refresh_JWT=refresh_token
+        )
+    )
 
         response.set_cookie("booking_refresh_token", refresh_token, httponly=True)
 

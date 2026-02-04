@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Response, status
 from pydantic import EmailStr
 
 from app.users.dependencies import get_curret_admin_user, get_curret_user
-from app.users.models import Users
+from app.users.models import User
 from app.users.service import UsersService
-from app.users.schemas import SSendMessageEmail, SUserAuth, SUserRegister
+from app.users.schemas import SSendMessageEmail, SUserAuth
 
 router = APIRouter(
     tags=["Auth"],
@@ -22,7 +22,7 @@ router = APIRouter(
             },
         }
 )
-async def register_user(user_data: SUserRegister):
+async def register_user(user_data: SUserAuth):
     await UsersService.register_user_service(user_data)
     return {"detail": "подтвердите почту"}
 
@@ -59,13 +59,9 @@ async def logout_user(response: Response):
 
 
 @router.get("/me")
-async def read_users_me(current_user: Users = Depends(get_curret_user)):
+async def read_users_me(current_user: User = Depends(get_curret_user)):
     return current_user
 
 @router.get("/all")
-async def read_users_all(current_user: Users = Depends(get_curret_admin_user)):
+async def read_users_all(current_user: User = Depends(get_curret_admin_user)):
     return await UsersService.find_all()
-
-@router.post("/refresh")
-async def refresh_token():
-    pass

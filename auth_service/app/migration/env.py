@@ -7,7 +7,8 @@ from alembic import context
 
 from app.config import setting
 from app.database import Base
-from app.users.models import Users #noqa
+from app.users.models import User #noqa
+from app.users.JWT_session.models import Session #noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

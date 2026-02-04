@@ -8,6 +8,7 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 
 from app.users.router import router as router_users
+from app.users.JWT_session.router import router as router_JWT
 from app.core.redis import redis_manager
 
 
@@ -29,6 +30,7 @@ app = FastAPI(
 
 
 app.include_router(router_users)
+app.include_router(router_JWT)
 
 
 @cache()

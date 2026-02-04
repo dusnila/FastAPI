@@ -43,6 +43,10 @@ class TokenRefreshAbsenException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="refresh токен отсутствует"
 
+class TokenNotFoundException(BookingException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    detail = "Сессия не найдена или уже была обновлена"
+
 class IncorrectTokenFormatException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="неверный формат токена"

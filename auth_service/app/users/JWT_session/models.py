@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -12,7 +12,7 @@ class Session(Base):
     user_id = Column(Integer ,ForeignKey("users.id"), nullable=False)
     refresh_JWT = Column(String, nullable=False, unique=True)
     
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     expires_at = Column(DateTime, nullable=False)
 
-    user = relationship("Users", back_populates="sessions")
+    user = relationship("User", back_populates="sessions")

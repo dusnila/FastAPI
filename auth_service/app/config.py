@@ -41,6 +41,9 @@ class Setting(BaseSettings):
 
     ALGORITHM: str
 
+    TIME_LIVE_REFRESH_TOKEN: int
+    TIME_LIVE_ACCESS_TOKEN: int
+
     SMTP_HOST: str
     SMTP_PORT: int
     SMTP_USER: str
