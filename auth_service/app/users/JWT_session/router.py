@@ -20,24 +20,26 @@ async def refresh_token(
     """Использует refresh_JWT для выдачи новой пары токенов"""
     return await SessionService.refresh_tokens(response, old_refresh_token, user)
 
+
 @router.get("/sessions", summary="Список всех активных сессий")
-async def get_all_sessions():
+async def get_all_sessions(user: User = Depends(get_curret_user)):
     """Позволяет пользователю увидеть, где выполнен вход"""
-    pass
+    return await SessionService.find_all(user_id=user.id)
+
 
 @router.get("/sessions/current", summary="Данные текущей сессии")
-async def get_current_session_info():
+async def get_current_session_info(refresh_token: str = Depends(get_refresh_token)):
     """Информация о конкретном текущем соединении"""
-    pass
+    return await SessionService.find_all(refresh_JWT=refresh_token)
 
 @router.delete("/sessions/other", summary="Выйти на всех других устройствах")
-async def delete_all_other_sessions():
+async def delete_all_other_sessions(RefreshToken: str = Depends(get_refresh_token), user: User = Depends(get_curret_user)):
     """Удаляет все сессии пользователя, кроме той, с которой сделан запрос"""
-    pass
+    return await SessionService.logout_others(user_id=user.id, refresh_token= RefreshToken)
 
 @router.delete("/sessions/delete", summary="Завершить конкретную сессию")
 async def delete_session_by_token(RefreshToken: str = Depends(get_refresh_token)):
-    """Удаление сессии по ID (например, если телефон украден)"""
+    """Удаление сессии (например, если телефон украден)"""
     return await SessionService.delete(refresh_JWT=RefreshToken)
 
 

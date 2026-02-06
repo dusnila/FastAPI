@@ -1,20 +1,10 @@
 from datetime import datetime, timedelta
 from fastapi import Request
-from jose import JWTError, jwt
+from jose import JWTError, jwt, ExpiredSignatureError
 
 from app.config import setting
 from app.exceptions import IncorrectTokenFormatException, TokenAccessAbsenException, TokenRefreshAbsenException, TokenExpiredException
 from app.users.JWT_session.schemas import SUserJWT
-
-
-def create_JWT(
-    token_data: dict,
-    token_type: str,
-    expire_minutes,
-) -> str:
-    payload_jwt = {"type": token_type}
-    payload_jwt.update(token_data)
-    return encode_token(payload_jwt, time=expire_minutes)
 
 
 def create_access_token(user: SUserJWT) -> str:
@@ -41,6 +31,16 @@ def create_refresh_token(user: SUserJWT) -> str:
     )
 
 
+def create_JWT(
+    token_data: dict,
+    token_type: str,
+    expire_minutes,
+) -> str:
+    payload_jwt = {"type": token_type}
+    payload_jwt.update(token_data)
+    return encode_token(payload_jwt, time=expire_minutes)
+
+
 def encode_token(data: dict, time: int) -> str:
     to_encode = data.copy()
     expire = datetime.now() + timedelta(minutes=time)
@@ -57,7 +57,11 @@ def  decode_access_token(request: Request):
     try:
         payload = jwt.decode(
             token, setting.PUBLIC_KEY, setting.ALGORITHM
-        )   
+        )
+
+    except ExpiredSignatureError:
+        raise TokenExpiredException   
+
     except JWTError:
         raise IncorrectTokenFormatException
     
