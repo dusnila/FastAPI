@@ -7,10 +7,9 @@ from app.config import setting
 from app.database import async_session_maker
 from app.service.base import BaseService
 from app.users.models import User
-from app.users.schemas import SUser
 
 from app.users.JWT_session.models import Session
-from app.users.JWT_session.schemas import SUserJWT, SSession
+from app.users.JWT_session.schemas import SUserJWT, SSessionData
 from app.users.JWT_session.utils_jwt import create_refresh_token, create_access_token
 
 from app.exceptions import TokenNotFoundException
@@ -21,7 +20,7 @@ class SessionService(BaseService):
 
 
     @classmethod
-    async def add_session(cls, session_data: SSession) -> None:
+    async def add_session(cls, session_data: SSessionData) -> None:
         """Добавление новой сессии при логине"""
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         expire_delta = timedelta(minutes=setting.TIME_LIVE_REFRESH_TOKEN)
@@ -45,7 +44,7 @@ class SessionService(BaseService):
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         new_expire = now + timedelta(minutes=setting.TIME_LIVE_REFRESH_TOKEN)
         
-        user_schema = SUser.model_validate(user)
+        user_schema = SUserJWT.model_validate(user)
         new_token = create_refresh_token(user_schema)
 
         async with async_session_maker() as session:
@@ -76,10 +75,15 @@ class SessionService(BaseService):
         cls,
         response: Response,
         old_refresh_token: str,
-        user: User
+        user_data: dict
     ) -> dict:
         """Комплексный метод: обновление в БД + установка новых кук"""
-        
+
+        from app.users.service import UsersService
+
+        username = user_data.get("sub")
+        user = await UsersService.find_one_or_none(username=username)
+
         new_refresh_token = await cls.update_session(
             old_token=old_refresh_token, 
             user=user
@@ -96,7 +100,7 @@ class SessionService(BaseService):
             # secure=True,
             samesite="lax"
         )
-        
+
         # Refresh Token
         response.set_cookie(
             "booking_refresh_token", 
@@ -115,6 +119,7 @@ class SessionService(BaseService):
         Удаляет все сессии пользователя, кроме текущей.
         Возвращает количество удаленных записей.
         """
+
         async with async_session_maker() as session:
             query = delete(cls.model).where(
                 and_(

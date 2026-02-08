@@ -1,18 +1,18 @@
 import uuid
 
-from fastapi import Response
+from fastapi import Request, Response
 
 
 from app.tasks.tasks import send_verification_email
 from app.exceptions import EmailAlreadyExistsException, IncorrectEmailorPasswordException, InvalidLinkException, NotSuchUserExeption, UserNotToVerifyExeption, UsernameAlreadyExistsException
 from app.users.utils import get_password_hash, verify_password
 from app.users.schemas import SUser, SUserAuth
-from app.users.JWT_session.schemas import SUserJWT, SSession
+from app.users.JWT_session.schemas import SUserJWT, SSessionData
 from app.service.base import BaseService
 from app.users.models import User
 from app.core.redis import redis_manager
 from app.users.JWT_session.service import SessionService
-from app.users.JWT_session.utils_jwt import create_refresh_token, create_access_token
+from app.users.JWT_session.utils_jwt import create_refresh_token, create_access_token, get_refresh_token
 
 
 class UsersService(BaseService):
@@ -89,7 +89,7 @@ class UsersService(BaseService):
 
         refresh_token = create_refresh_token(user=user_data)
         await SessionService.add_session(
-        session_data=SSession(
+        session_data=SSessionData(
             user_id=user_schema.id,
             refresh_JWT=refresh_token
         )
@@ -103,3 +103,13 @@ class UsersService(BaseService):
     @classmethod
     async def set_refresh_token_DB(token: str):
         pass
+    
+
+    @classmethod
+    async def logout_and_delete_session(cls, response: Response, request: Request):
+        RefreshToken = get_refresh_token(request)
+
+        await SessionService.delete(refresh_JWT=RefreshToken)        
+
+        response.delete_cookie("booking_access_token")
+        response.delete_cookie("booking_refresh_token")

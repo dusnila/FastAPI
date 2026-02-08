@@ -1,16 +1,15 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import Request
 from jose import JWTError, jwt, ExpiredSignatureError
 
 from app.config import setting
-from app.exceptions import IncorrectTokenFormatException, TokenAccessAbsenException, TokenRefreshAbsenException, TokenExpiredException
+from app.exceptions import IncorrectTokenFormatException, TokenAbsenException, TokenExpiredException
 from app.users.JWT_session.schemas import SUserJWT
 
 
 def create_access_token(user: SUserJWT) -> str:
     payload_jwt = {
         "sub": user.username,
-        "username": user.username,
         "email": user.email,
     } 
     return create_JWT(
@@ -43,7 +42,7 @@ def create_JWT(
 
 def encode_token(data: dict, time: int) -> str:
     to_encode = data.copy()
-    expire = datetime.now() + timedelta(minutes=time)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=time)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
         to_encode, setting.PRIVATE_KEY, setting.ALGORITHM
@@ -54,49 +53,36 @@ def encode_token(data: dict, time: int) -> str:
 def  decode_access_token(request: Request):
     token = get_token(request, "booking_access_token")
 
-    try:
-        payload = jwt.decode(
-            token, setting.PUBLIC_KEY, setting.ALGORITHM
-        )
-
-    except ExpiredSignatureError:
-        raise TokenExpiredException   
-
-    except JWTError:
-        raise IncorrectTokenFormatException
-    
-    expire = payload.get("exp")
-    if (not expire) or (int(expire) < datetime.now().timestamp()):
-        raise TokenExpiredException
-    
-    return payload
+    return decode_token(token, "access")
 
 
 def decode_refresh_token(request: Request):
     token = get_token(request, "booking_refresh_token")
-    
+
+    return decode_token(token, "refresh")
+
+
+def decode_token(token: str, expected_type: str):
     try:
-        payload = jwt.decode(
-            token, setting.PUBLIC_KEY, setting.ALGORITHM
-        )   
+        payload = jwt.decode(token, setting.PUBLIC_KEY, setting.ALGORITHM)
+        
+        if payload.get("type") != expected_type:
+            raise IncorrectTokenFormatException
+            
+        return payload
+    except ExpiredSignatureError:
+        raise TokenExpiredException   
     except JWTError:
         raise IncorrectTokenFormatException
-    
-    expire = payload.get("exp")
-    if (not expire) or (int(expire) < datetime.now().timestamp()):
-        raise TokenExpiredException
-    
-    return payload
 
-def get_token(request: Request, type_token: str):
-    token = request.cookies.get(type_token)
-    if not token:
-        raise TokenRefreshAbsenException
-    return token
 
 def get_refresh_token(request: Request):
-    token = request.cookies.get("booking_refresh_token")
+    return get_token(request, "booking_refresh_token")
+
+
+def get_token(request: Request, name_token: str):
+    token = request.cookies.get(name_token)
     if not token:
-        raise TokenRefreshAbsenException
+        raise TokenAbsenException
     return token
     

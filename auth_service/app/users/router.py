@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import EmailStr
 
 from app.users.dependencies import get_curret_admin_user, get_curret_user
@@ -54,8 +54,9 @@ async def login_user(response: Response, user_data: SUserAuth):
 
 
 @router.post("/logout")
-async def logout_user(response: Response):
-    response.delete_cookie("booking_access_token")
+async def logout_user(response: Response, request: Request):
+    return await UsersService.logout_and_delete_session(response, request)
+
 
 
 @router.get("/me")

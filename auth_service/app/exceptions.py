@@ -35,13 +35,9 @@ class TokenExpiredException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="токен истек"
 
-class TokenAccessAbsenException(BookingException):
+class TokenAbsenException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
-    detail="access токен отсутствует"
-
-class TokenRefreshAbsenException(BookingException):
-    status_code=status.HTTP_401_UNAUTHORIZED
-    detail="refresh токен отсутствует"
+    detail="токен отсутствует"
 
 class TokenNotFoundException(BookingException):
     status_code = status.HTTP_401_UNAUTHORIZED
@@ -55,18 +51,6 @@ class UserIsNotException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="такой пользовател отсуствует"
 
-class RoomCannotBeBooked(BookingException):
-    status_code=status.HTTP_409_CONFLICT
-    detail="не осталось свободных мест"
-
-class NotRoomsInLocation(BookingException):
-    status_code=status.HTTP_409_CONFLICT
-    detail="нету отелей в этой локации со свободными комнатами"
-
-class NotBookingsExecute(BookingException):
-    status_code= status.HTTP_409_CONFLICT
-    detail="нету записей для этого пользователя"
-
-class BookingNotDeleteExecute(BookingException):
-    status_code = status.HTTP_404_NOT_FOUND
-    detail="нету такой записи или она не ваша"
+class UserIsNotUnathorized(BookingException):
+    status_code=status.HTTP_403_FORBIDDEN
+    detail="у пользователя недостаточно прав"
