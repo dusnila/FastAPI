@@ -9,24 +9,26 @@ from app.users.JWT_session.schemas import SUserJWT
 
 def create_access_token(user: SUserJWT) -> str:
     payload_jwt = {
-        "sub": user.username,
+        "sub": str(user.id),
+        "username": user.username,
         "email": user.email,
+        "role": user.role
     } 
     return create_JWT(
         token_data=payload_jwt, 
         token_type="access",
-        expire_minutes=30
+        expire_minutes=setting.TIME_LIVE_ACCESS_TOKEN
     )
 
 
 def create_refresh_token(user: SUserJWT) -> str:
     payload_jwt = {
-        "sub": user.username,
+        "sub": str(user.id),
     }
     return create_JWT(
         token_data=payload_jwt,
         token_type="refresh",
-        expire_minutes=7*24*60
+        expire_minutes=setting.TIME_LIVE_REFRESH_TOKEN
     )
 
 

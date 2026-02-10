@@ -10,14 +10,14 @@ from app.users.JWT_session.service import SessionService
 async def get_curret_user(request: Request, response: Response):
     try:
         payload = decode_access_token(request)
-        username = payload.get("sub")
+        user_id = payload.get("sub")
 
     except TokenExpiredException:
         try:
             refreshTokenPayload = decode_refresh_token(request)
-            username = refreshTokenPayload.get("sub")
+            user_id = refreshTokenPayload.get("sub")
 
-            user = await UsersService.find_one_or_none(username=username)
+            user = await UsersService.find_by_id(int(user_id))
             if not user:
                 raise UserIsNotException
             
@@ -30,10 +30,10 @@ async def get_curret_user(request: Request, response: Response):
         except (TokenExpiredException, TokenAbsenException, IncorrectTokenFormatException):
             raise TokenAbsenException
 
-    if not username:
+    if not user_id:
         raise UserIsNotException
     
-    user = await UsersService.find_one_or_none(username=username)
+    user = await UsersService.find_by_id(int(user_id))
     if not user:
         raise UserIsNotException
     

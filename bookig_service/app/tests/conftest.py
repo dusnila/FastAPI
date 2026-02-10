@@ -10,7 +10,6 @@ from app.database import engin, Base, async_session_maker
 from app.booking.models import Bookings
 from app.hotels.models import Hotels
 from app.hotels.rooms.models import Rooms
-from app.users.models import Users
 
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
@@ -41,13 +40,11 @@ async def prepare_database():
 
     async with async_session_maker() as session:
         add_hotels = insert(Hotels).values(hotels)
-        add_users = insert(Users).values(users)
         add_rooms = insert(Rooms).values(rooms)
         add_bookings = insert(Bookings).values(bookings)
 
         await session.execute(add_hotels)
         await session.execute(add_rooms)
-        await session.execute(add_users)
         await session.execute(add_bookings)
 
         await session.commit()

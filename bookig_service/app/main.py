@@ -11,16 +11,14 @@ from redis import asyncio as aioredis
 from sqladmin import Admin
 from fastapi_versioning import VersionedFastAPI
 
-from app.admin.auth import authentication_backend
-from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UsersAdmin
+# from app.admin.auth import authentication_backend qwe
+# from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UsersAdmin
 from app.booking.router import router as router_bookings
 from app.config import setting
 from app.database import engin
 from app.hotels.rooms.router import router as router_hotels
 from app.images.router import router as router_images
 from app.pages.router import router as router_pages
-from app.users.models import Users
-from app.users.router import router as router_users
 from app.logger import logger
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -47,7 +45,6 @@ app = FastAPI(
 )
 
 
-app.include_router(router_users)
 app.include_router(router_bookings)
 app.include_router(router_hotels)
 
@@ -70,12 +67,12 @@ app = VersionedFastAPI(app,
 instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)
 
 
-admin = Admin(app, engin, authentication_backend=authentication_backend)
+# admin = Admin(app, engin, authentication_backend=authentication_backend)
 
-admin.add_view(UsersAdmin)
-admin.add_view(BookingsAdmin)
-admin.add_view(HotelsAdmin)
-admin.add_view(RoomsAdmin)
+# admin.add_view(UsersAdmin)
+# admin.add_view(BookingsAdmin)
+# admin.add_view(HotelsAdmin)
+# admin.add_view(RoomsAdmin)
 
 
 @app.middleware("http")

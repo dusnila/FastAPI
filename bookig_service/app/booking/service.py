@@ -5,7 +5,6 @@ from sqlalchemy import and_, delete, func, insert, or_, select
 from app.booking.models import Bookings
 from app.hotels.rooms.models import Rooms
 from app.service.base import BaseService
-from app.users.models import Users
 
 
 class BookingService(BaseService):

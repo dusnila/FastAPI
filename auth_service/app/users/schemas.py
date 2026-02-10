@@ -12,6 +12,8 @@ class SUser(BaseModel):
     id : int
     username : str
     email : EmailStr
+    hashed_password: str
+    role: str
     is_active : bool
 
     model_config = ConfigDict(from_attributes=True)

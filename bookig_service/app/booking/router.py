@@ -7,7 +7,7 @@ from app.booking.service import BookingService
 from app.exceptions import BookingNotDeleteExecute, NotBookingsExecute, RoomCannotBeBooked
 from app.tasks.tasks import send_booking_confirmation_email
 from app.users.dependencies import get_curret_user
-from app.users.models import Users
+from app.users.schemas import SUser
 
 
 router = APIRouter(
@@ -18,7 +18,7 @@ router = APIRouter(
 
 @router.get("")
 @version(1)
-async def get_booking(user: Users = Depends(get_curret_user)):
+async def get_booking(user: SUser = Depends(get_curret_user)):
     bookings = await BookingService.find_all_booking(user.id)
     if not bookings:
         return NotBookingsExecute
@@ -30,7 +30,7 @@ async def get_booking(user: Users = Depends(get_curret_user)):
 @version(1)
 async def add_booking(
     room_id: int, date_from: date, date_to: date,
-    user: Users = Depends(get_curret_user),
+    user: SUser = Depends(get_curret_user),
 ) -> SBooking:
     booking = await BookingService.add_booking(user.id, room_id, date_from, date_to)
     if not booking:
@@ -48,7 +48,7 @@ async def add_booking(
 @version(1)
 async def delete(
     id_booking: int,
-    user: Users = Depends(get_curret_user),
+    user: SUser = Depends(get_curret_user),
 ):
     result = await BookingService.delete(user.id, id_booking)
     if not result:

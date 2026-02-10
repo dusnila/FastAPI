@@ -3,7 +3,6 @@ from app.config import setting
 
 celery = Celery(
     "tasks",
-    broker=f"redis://{setting.REDIS_HOST}:{setting.REDIS_PORT}",
+    broker= setting.RABBITMQ_URL,
     include=["app.tasks.tasks"]
 )
-

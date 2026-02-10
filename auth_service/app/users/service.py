@@ -61,7 +61,6 @@ class UsersService(BaseService):
 
     @classmethod
     async def send_message_verify_service(cls, email: str):
-        print(await  cls.find_one_or_none(email=email))
         if not await cls.find_one_or_none(email=email):
             raise NotSuchUserExeption
 
@@ -77,17 +76,18 @@ class UsersService(BaseService):
     @classmethod
     async def login_and_get_token(cls, response: Response, user_data: SUserAuth):
         user = await cls.find_one_or_none(email=user_data.email)
-        if not user or not verify_password(user_data.password, user.hashed_password):
+        user_schema = SUser.model_validate(user)
+
+        if not user or not verify_password(user_data.password, user_schema.hashed_password):
             raise IncorrectEmailorPasswordException
         
-        user_schema = SUser.model_validate(user)
         if not user_schema.is_active:
             raise UserNotToVerifyExeption
         
-        access_token = create_access_token(user=user_data)
+        access_token = create_access_token(user=user_schema)
         response.set_cookie("booking_access_token", access_token, httponly=True)
 
-        refresh_token = create_refresh_token(user=user_data)
+        refresh_token = create_refresh_token(user=user_schema)
         await SessionService.add_session(
         session_data=SSessionData(
             user_id=user_schema.id,

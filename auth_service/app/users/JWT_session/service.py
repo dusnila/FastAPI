@@ -81,8 +81,8 @@ class SessionService(BaseService):
 
         from app.users.service import UsersService
 
-        username = user_data.get("sub")
-        user = await UsersService.find_one_or_none(username=username)
+        user_id = user_data.get("sub")
+        user = await UsersService.find_by_id(int(user_id))
 
         new_refresh_token = await cls.update_session(
             old_token=old_refresh_token, 

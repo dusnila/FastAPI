@@ -27,8 +27,16 @@ class IncorrectTokenFormatException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
     detail="неверный формат токена"
 
+class IncorrectTypeTokenException(BookingException):
+    status_code=status.HTTP_401_UNAUTHORIZED
+    detail="не вернный тип токена"
+
 class UserIsNotException(BookingException):
     status_code=status.HTTP_401_UNAUTHORIZED
+
+class UserIDNotFaundExeption(BookingException):
+    status_code=status.HTTP_401_UNAUTHORIZED
+    detail="не найден id пользователя"
 
 class RoomCannotBeBooked(BookingException):
     status_code=status.HTTP_409_CONFLICT

@@ -1,4 +1,5 @@
 from typing import Literal
+from pydantic import FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Setting(BaseSettings):
@@ -23,11 +24,18 @@ class Setting(BaseSettings):
 
     @property
     def TEST_DATABASE_URL(self) -> str:
-        return f"postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASS}@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}"
+        return f"postgresql+asyncpg://{self.TEST_DB_USER}:{self.TEST_DB_PASS}@{self.TEST_DB_HOST}:{self.TEST_DB_PORT}/{self.TEST_DB_NAME}" 
     
+    PUBLIC_KEY_PATH: FilePath
 
-    SALT: str
-    ALGORITHN: str
+    @property
+    def PUBLIC_KEY(self) -> str:
+        return self.PUBLIC_KEY_PATH.read_text(encoding="UTF-8")
+
+    ALGORITHM: str
+
+    TIME_LIVE_REFRESH_TOKEN: int
+    TIME_LIVE_ACCESS_TOKEN: int
 
     SMTP_HOST: str
     SMTP_PORT: int
@@ -36,6 +44,15 @@ class Setting(BaseSettings):
 
     REDIS_HOST: str
     REDIS_PORT: int
+
+    RABBITMQ_USER: str
+    RABBITMQ_PASS: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+
+    @property
+    def RABBITMQ_URL(self) -> str:
+        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASS}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
 
     model_config = SettingsConfigDict(env_file=".env")
 
