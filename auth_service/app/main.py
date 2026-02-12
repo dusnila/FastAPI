@@ -7,10 +7,14 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from prometheus_fastapi_instrumentator import Instrumentator
+from sqladmin import Admin
 
 from app.users.router import router as router_users
 from app.users.JWT_session.router import router as router_JWT
 from app.core.redis import redis_manager
+from app.database import engin
+from app.admin.auth import authentication_backend
+from app.admin.views import SessionAdmin, UserAdmin
 
 
 instrumentator = Instrumentator(
@@ -48,4 +52,9 @@ async def get_cache():
 
 
 instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)
+
+admin = Admin(app, engin, authentication_backend=authentication_backend, base_url="/admin")
+
+admin.add_view(UserAdmin)
+admin.add_view(SessionAdmin)
 

@@ -3,7 +3,7 @@ services:
     image: postgres:latest
     container_name: booking_db
     volumes:
-      - postgresdata_booking:/var/lib/postgresql/data
+      - postgresdata_booking:/var/lib/postgresql
     env_file:
       - ./bookig_service/.env-non-dev
 
@@ -11,7 +11,7 @@ services:
     image: postgres:latest
     container_name: auth_db
     volumes:
-      - postgresdata_auth:/var/lib/postgresql/data
+      - postgresdata_auth:/var/lib/postgresql
     env_file:
       - ./auth_service/.env-non-dev
 

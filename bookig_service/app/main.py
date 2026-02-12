@@ -10,9 +10,10 @@ from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
 from sqladmin import Admin
 from fastapi_versioning import VersionedFastAPI
+from starlette.middleware.sessions import SessionMiddleware
 
-# from app.admin.auth import authentication_backend qwe
-# from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin, UsersAdmin
+from app.admin.auth import authentication_backend
+from app.admin.views import BookingsAdmin, HotelsAdmin, RoomsAdmin
 from app.booking.router import router as router_bookings
 from app.config import setting
 from app.database import engin
@@ -63,17 +64,16 @@ app = VersionedFastAPI(app,
     root_path="/booking"
 )
 
-
+app.add_middleware(SessionMiddleware, secret_key="some_secret")
 
 instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)
 
 
-# admin = Admin(app, engin, authentication_backend=authentication_backend)
+admin = Admin(app, engin, authentication_backend=authentication_backend, base_url="/admin")
 
-# admin.add_view(UsersAdmin)
-# admin.add_view(BookingsAdmin)
-# admin.add_view(HotelsAdmin)
-# admin.add_view(RoomsAdmin)
+admin.add_view(BookingsAdmin)
+admin.add_view(HotelsAdmin)
+admin.add_view(RoomsAdmin)
 
 
 @app.middleware("http")

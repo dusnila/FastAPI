@@ -76,10 +76,10 @@ class UsersService(BaseService):
     @classmethod
     async def login_and_get_token(cls, response: Response, user_data: SUserAuth):
         user = await cls.find_one_or_none(email=user_data.email)
-        user_schema = SUser.model_validate(user)
-
-        if not user or not verify_password(user_data.password, user_schema.hashed_password):
+        if not user or not verify_password(user_data.password, user.hashed_password):
             raise IncorrectEmailorPasswordException
+        
+        user_schema = SUser.model_validate(user)
         
         if not user_schema.is_active:
             raise UserNotToVerifyExeption
