@@ -6,16 +6,25 @@ from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.users.router import router as router_users
 from app.users.JWT_session.router import router as router_JWT
 from app.core.redis import redis_manager
 
 
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    excluded_handlers=[".*admin.*", "/metrics"]
+)
+
+
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI) -> AsyncIterator[None]:
     redis_client = redis_manager.get_client()
     FastAPICache.init(RedisBackend(redis_client), prefix="cache")
+    
+    instrumentator.expose(app_instance)
 
     yield
 
@@ -36,4 +45,7 @@ app.include_router(router_JWT)
 @cache()
 async def get_cache():
     return 1
+
+
+instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)
 
