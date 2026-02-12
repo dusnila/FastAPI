@@ -3,7 +3,7 @@ services:
     image: postgres:latest
     container_name: booking_db
     volumes:
-      - postgresdata_booking:/var/lib/postgressql/data
+      - postgresdata_booking:/var/lib/postgresql/data
     env_file:
       - ./bookig_service/.env-non-dev
 
@@ -11,7 +11,7 @@ services:
     image: postgres:latest
     container_name: auth_db
     volumes:
-      - postgresdata_auth:/var/lib/postgressql/data
+      - postgresdata_auth:/var/lib/postgresql/data
     env_file:
       - ./auth_service/.env-non-dev
 
@@ -19,9 +19,22 @@ services:
     image: redis:latest
     container_name: booking_redis
 
-  # rabbitmq:
-  #   image: rabbitmq:management
-  #   container_name: compose_rabbitmq
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_broker
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s  
+      timeout: 10s 
+      retries: 10   
+      start_period: 30s 
   
   booking:
     build:
@@ -62,47 +75,70 @@ services:
       - auth
       - booking
  
-  # celery:
-  #   build:
-  #     context: ./Auth_service
-  #   container_name: task_celery
-  #   command: ["/Auth/docker/celery.sh", "celery"]
-  #   env_file:
-  #     - ./Auth_service/.env-non-dev
-  #   depends_on:
-  #     - redis
-  #     - rabbitmq
+  celery_auth:
+    build:
+      context: ./auth_service
+    container_name: task_celery_auth
+    command: ["/auth/docker/celery.sh", "celery"]
+    env_file:
+      - ./auth_service/.env-non-dev
+    volumes:
+      - ./certs:/certs:ro
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy 
+  celery_booking:
+    build:
+      context: ./bookig_service
+    container_name: task_celery_booking
+    command: ["/booking/docker/celery.sh", "celery"]
+    env_file:
+      - ./bookig_service/.env-non-dev
+    volumes:
+      - ./certs:/certs:ro
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+        
+  flower:
+    build:
+      context: ./auth_service
+    container_name: task_flower
+    command: ["/auth/docker/celery.sh", "flower"]
+    env_file:
+      - ./auth_service/.env-non-dev
+    volumes:
+      - ./certs:/certs:ro
+    ports:
+      - 5555:5555
+    depends_on:
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
-  # flower:
-  #   build:
-  #     context: ./Auth_service
-  #   container_name: task_flower
-  #   command: ["/Auth/docker/celery.sh", "flower"]
-  #   env_file:
-  #     - ./Auth_service/.env-non-dev
-  #   ports:
-  #     - 5555:5555
-  #   depends_on:
-  #     - redis
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    user: "root"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    ports:
+      - 9090:9090
 
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   container_name: prometheus
-  #   user: "root"
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheusdata:/prometheus
-  #   ports:
-  #     - 9090:9090
-
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   volumes:
-  #     - grafanadata:/var/lib/grafana
-  #   restart: unless-stopped
-  #   ports:
-  #     - 3000:3000
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - grafanadata:/var/lib/grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
     
 
 volumes:

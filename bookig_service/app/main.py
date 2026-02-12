@@ -60,8 +60,9 @@ async def get_cache():
 app = VersionedFastAPI(app,
     version_format="{major}",
     prefix_format="/v{major}",
-    root_path="/booking"                    
+    root_path="/booking"
 )
+
 
 
 instrumentator.instrument(app).expose(app, endpoint="/metrics", include_in_schema=True)

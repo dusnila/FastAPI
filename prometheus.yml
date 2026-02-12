@@ -9,7 +9,12 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'booking'
+  - job_name: 'booking_app'
     scrape_interval: 5s
     static_configs:
-      - targets: ['booking:8000']
+      - targets: ['booking_app:8000']
+
+  - job_name: 'auth_app'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['auth_app:8000']
